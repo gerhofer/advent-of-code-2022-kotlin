@@ -1,6 +1,6 @@
 fun main(args: Array<String>) {
-    println("Part 1: ${Day202020.solvePart1()}")
-    println("Part 2: ${Day202020.solvePart2()}")
+    println("Part 1: ${Day6.solvePart1()}")
+    println("Part 2: ${Day6.solvePart2()}")
 }
 
 object Day6 {
