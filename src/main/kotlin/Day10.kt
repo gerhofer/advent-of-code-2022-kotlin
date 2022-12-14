@@ -5,7 +5,7 @@ fun main(args: Array<String>) {
 
 object Day10 {
     fun solvePart1(): Int {
-        val input = Day202020::class.java.getResource("day10.txt")?.readText() ?: error("Can't read input")
+        val input = Day10::class.java.getResource("day10.txt")?.readText() ?: error("Can't read input")
         val commands = input.split("\r\n")
             .map { it.split(" ") }
             .map {
@@ -38,7 +38,7 @@ object Day10 {
     }
 
     fun solvePart2(): String {
-        val input = Day202020::class.java.getResource("day10.txt")?.readText() ?: error("Can't read input")
+        val input = Day10::class.java.getResource("day10.txt")?.readText() ?: error("Can't read input")
         val commands = input.split("\r\n")
             .map { it.split(" ") }
             .map {

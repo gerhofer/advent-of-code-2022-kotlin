@@ -5,7 +5,7 @@ fun main(args: Array<String>) {
 
 object Day12 {
     fun solvePart1(): Int {
-        val input = Day202020::class.java.getResource("day12.txt")?.readText() ?: error("Can't read input")
+        val input = Day12::class.java.getResource("day12.txt")?.readText() ?: error("Can't read input")
         val map = readMap(input)
         val numberOfRows = map.size
         val numberOfColumns = map[0].size
@@ -96,7 +96,7 @@ object Day12 {
         goal.value() <= current.value() + 1 && !current.shortestPath.contains(goal)
 
     fun solvePart2(): Int {
-        val input = Day202020::class.java.getResource("day12.txt")?.readText() ?: error("Can't read input")
+        val input = Day12::class.java.getResource("day12.txt")?.readText() ?: error("Can't read input")
         val map = readMap(input)
         val numberOfRows = map.size
         val numberOfColumns = map[0].size

@@ -7,7 +7,7 @@ fun main(args: Array<String>) {
 
 object Day11 {
     fun solvePart1(): Int {
-        val input = Day202020::class.java.getResource("day11.txt")?.readText() ?: error("Can't read input")
+        val input = Day11::class.java.getResource("day11.txt")?.readText() ?: error("Can't read input")
         val monkeys = input.split("\r\n\r\n")
             .map {
                 parseMonkey(it)
@@ -78,7 +78,7 @@ object Day11 {
     }
 
     fun solvePart2(): Long {
-        val input = Day202020::class.java.getResource("day11.txt")?.readText() ?: error("Can't read input")
+        val input = Day11::class.java.getResource("day11.txt")?.readText() ?: error("Can't read input")
         val monkeys = input.split("\r\n\r\n")
             .map { parseMonkey(it) }
             .associateBy { it.index }

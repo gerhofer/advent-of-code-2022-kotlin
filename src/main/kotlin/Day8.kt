@@ -9,7 +9,7 @@ fun main(args: Array<String>) {
 object Day8 {
 
     fun solvePart1(): Long {
-        val input = Day202020::class.java.getResource("day8.txt")?.readText() ?: error("Can't read input")
+        val input = Day8::class.java.getResource("day8.txt")?.readText() ?: error("Can't read input")
         val trees = input.split("\r\n")
             .map { treeLine -> treeLine.split("").filter { it.isNotBlank() }.map { tree -> tree.toInt() } }
         var visibileTreeCount = trees.size * 2 + trees[0].size * 2L - 4
@@ -34,7 +34,7 @@ object Day8 {
     }
 
     fun solvePart2(): Long {
-        val input = Day202020::class.java.getResource("day8.txt")?.readText() ?: error("Can't read input")
+        val input = Day8::class.java.getResource("day8.txt")?.readText() ?: error("Can't read input")
         val trees = input.split("\r\n")
             .map { treeLine -> treeLine.split("").filter { it.isNotBlank() }.map { tree -> tree.toInt() } }
         val scenicScores = mutableListOf<Long>()

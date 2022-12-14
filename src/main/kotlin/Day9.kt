@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
 object Day9 {
 
     fun solvePart1(): Int {
-        val input = Day202020::class.java.getResource("day9.txt")?.readText() ?: error("Can't read input")
+        val input = Day9::class.java.getResource("day9.txt")?.readText() ?: error("Can't read input")
         var headPosition = Position(0, 0)
         var tailPosition = Position(0, 0)
         val visitedTailPositions = mutableListOf(tailPosition)
@@ -67,7 +67,7 @@ object Day9 {
     }
 
     fun solvePart2(): Int {
-        val input = Day202020::class.java.getResource("day9.txt")?.readText() ?: error("Can't read input")
+        val input = Day9::class.java.getResource("day9.txt")?.readText() ?: error("Can't read input")
         var headPosition = Position(0, 0)
         var tail1Position = Position(0, 0)
         var tail2Position = Position(0, 0)

@@ -6,7 +6,7 @@ fun main(args: Array<String>) {
 object Day7 {
 
     fun solvePart1(): Long {
-        val input = Day202020::class.java.getResource("day7.txt")?.readText() ?: error("Can't read input")
+        val input = Day7::class.java.getResource("day7.txt")?.readText() ?: error("Can't read input")
         val root = buildFileTree(input)
         val directoryToSize = getDirectoryWithSizes(root)
         return directoryToSize.values.filter { it <= 100000L }.sum()
@@ -50,7 +50,7 @@ object Day7 {
     }
 
     fun solvePart2(): Long {
-        val input = Day202020::class.java.getResource("day7.txt")?.readText() ?: error("Can't read input")
+        val input = Day7::class.java.getResource("day7.txt")?.readText() ?: error("Can't read input")
         val totalDiskSize = 70000000L
         val neededFreeSpace = 30000000L
         val root = buildFileTree(input)
