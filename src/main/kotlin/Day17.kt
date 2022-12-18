@@ -25,10 +25,10 @@ object Day17 {
     val startingColumn = 2
     val numberOfRocksToFall = 2022
 
-    fun solvePart1(): Int {
+    fun solvePart1(): Long {
         val input = Day17::class.java.getResource("day17.txt")?.readText() ?: error("Can't read input")
         val jetPattern = input.split("").filter { it.isNotBlank() }
-        val cave = mutableMapOf<Int, MutableSet<Int>>() // row to filledParts
+        val cave = mutableMapOf<Long, MutableSet<Int>>() // row to filledParts
         cave[-1] = mutableSetOf(0, 1, 2, 3, 4, 5, 6)
         var rockCount = 0
         var idxInJetPattern = 0
@@ -72,10 +72,21 @@ object Day17 {
             }
         }
 
-        return cave.keys.max() + 1
+        return cave.keys.max() + 1L
     }
 
-    fun drawCave(cave: Map<Int, Set<Int>>) {
+    fun getDecidingPattern(cave: Map<Long, Set<Int>>): Map<Long, Set<Int>> {
+        val maxRowPerColumn = (0..6).map { col -> cave.filter { it.value.contains(col) }.maxOfOrNull { it.key } ?: 0L }
+        return cave.filter { it.key >= maxRowPerColumn.min() }
+    }
+
+    fun drawCave(cave: Map<Long, Set<Int>>) {
+        val printed = asString(cave)
+        println(printed)
+        println()
+    }
+
+    private fun asString(cave: Map<Long, Set<Int>>): String {
         val printed = cave.map {
             (0..6).joinToString("") { c ->
                 if (it.value.contains(c)) {
@@ -85,16 +96,84 @@ object Day17 {
                 }
             }
         }.reversed().joinToString("\r\n")
-        println(printed)
-        println()
+        return printed
     }
 
     fun solvePart2(): Long {
         val input = Day17::class.java.getResource("day17.txt")?.readText() ?: error("Can't read input")
-        return 1L
+        val jetPattern = input.split("").filter { it.isNotBlank() }
+        val cave = mutableMapOf<Long, MutableSet<Int>>() // row to filledParts
+        cave[-1] = mutableSetOf(0, 1, 2, 3, 4, 5, 6)
+        var rockCount = 0L
+        var idxInJetPattern = 0
+        var currentRock: Rock? = null
+        val seenStates = mutableSetOf<State>()
+        var patternFits = 0L
+        var heightOfPattern = 0L
+        val wantedNumberOfRocks = 1000000000000
+        var heightTilFirstPattern = 0L
+
+        while (rockCount < wantedNumberOfRocks) {
+            // needs new rock?
+            if (currentRock == null) {
+                val startingRow = (cave.keys.maxOrNull() ?: 0L) + startingXOffset
+                currentRock =
+                    Rock(Coordinate(startingRow, startingColumn), rockPatterns[(rockCount % rockPatterns.size).toInt()])
+            }
+
+            // jet movement
+            if (idxInJetPattern == jetPattern.size) {
+                idxInJetPattern = 0
+            }
+            if (jetPattern[idxInJetPattern] == ">") {
+                if (currentRock.canMoveRight() && canMoveRight(cave, currentRock)) {
+                    currentRock.position.moveRight()
+                }
+            } else {
+                if (currentRock.canMoveLeft() && canMoveLeft(cave, currentRock)) {
+                    currentRock.position.moveLeft()
+                }
+            }
+            idxInJetPattern++
+
+            // down movement / coming to rest
+            if (canMoveDown(cave, currentRock)) {
+                currentRock.position.moveDown()
+            } else {
+                val positionsInCaveByRow = currentRock.getAbsolutePositions().groupBy { it.row }
+                for (positionsInRow in positionsInCaveByRow) {
+                    val stonesInRow = cave.getOrDefault(positionsInRow.key, mutableSetOf())
+                    stonesInRow.addAll(positionsInRow.value.map { it.column })
+                    cave[positionsInRow.key] = stonesInRow
+                }
+                currentRock = null
+                rockCount++
+
+                val state = State(idxInJetPattern, rockCount, getDecidingPattern(cave))
+                if (seenStates.contains(state) && heightOfPattern == 0L) {
+                    val existingState = seenStates.first { it == state }
+                    val heightAtPreviousSimilarState = existingState.getHeightAtTime()
+                    val heightNow = state.getHeightAtTime()
+                    heightOfPattern = heightNow - heightAtPreviousSimilarState
+                    heightTilFirstPattern = heightAtPreviousSimilarState
+
+                    val rockCountAtPreviousSimilarState = existingState.rockCount
+                    val rockCountNow = state.rockCount
+                    val rocksPerPattern = rockCountNow - rockCountAtPreviousSimilarState
+
+                    patternFits = (wantedNumberOfRocks - rockCount) / rocksPerPattern
+                    rockCount = rockCount + patternFits * rocksPerPattern
+                    println("Continue at ${rockCount} with a height of ${(patternFits + 1) * heightOfPattern}")
+                }
+                seenStates.add(state)
+            }
+        }
+
+        val offset = cave.keys.max() - (heightOfPattern)
+        return (patternFits + 1)* heightOfPattern + (offset + 1)
     }
 
-    private fun canMoveDown(cave: Map<Int, Set<Int>>, rock: Rock): Boolean {
+    private fun canMoveDown(cave: Map<Long, Set<Int>>, rock: Rock): Boolean {
         val positionsInCave = rock.getAbsolutePositions()
         val posPerRow = positionsInCave.groupBy { it.row }
         return posPerRow.all {
@@ -102,7 +181,7 @@ object Day17 {
         }
     }
 
-    private fun canMoveLeft(cave: Map<Int, Set<Int>>, rock: Rock): Boolean {
+    private fun canMoveLeft(cave: Map<Long, Set<Int>>, rock: Rock): Boolean {
         val positionsInCave = rock.getAbsolutePositions()
         val posPerRow = positionsInCave.groupBy { it.row }
         return posPerRow.all {
@@ -110,7 +189,7 @@ object Day17 {
         }
     }
 
-    private fun canMoveRight(cave: Map<Int, Set<Int>>, rock: Rock): Boolean {
+    private fun canMoveRight(cave: Map<Long, Set<Int>>, rock: Rock): Boolean {
         val positionsInCave = rock.getAbsolutePositions()
         val posPerRow = positionsInCave.groupBy { it.row }
         return posPerRow.all {
@@ -120,6 +199,34 @@ object Day17 {
 
     val MIN_COLUMN = 0
     val MAX_COLUMN = 6
+
+    data class State(
+        val jetIndex: Int,
+        val rockCount: Long,
+        val linesUntilAllIndices: Map<Long, Set<Int>>,
+    ) {
+
+        fun getHeightAtTime() = linesUntilAllIndices.keys.max()
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as State
+
+            if (jetIndex != other.jetIndex) return false
+            if ((rockCount % rockPatterns.size).toInt() != (other.rockCount % rockPatterns.size).toInt()) return false
+            if (asString(linesUntilAllIndices) != asString(other.linesUntilAllIndices)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = jetIndex
+            result = 31 * result + (rockCount % rockPatterns.size).toInt()
+            result = 31 * result + asString(linesUntilAllIndices).hashCode()
+            return result
+        }
+    }
 
     data class Rock(
         var position: Coordinate,
@@ -145,7 +252,7 @@ object Day17 {
     )
 
     data class Coordinate(
-        var row: Int,
+        var row: Long,
         var column: Int
     ) {
         fun moveLeft() {
