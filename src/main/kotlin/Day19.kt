@@ -1,5 +1,7 @@
+import kotlin.math.max
+
 fun main(args: Array<String>) {
-    println("Part 1: ${Day19.solvePart1()}")
+   // println("Part 1: ${Day19.solvePart1()}")
     println("Part 2: ${Day19.solvePart2()}")
 }
 
@@ -32,34 +34,41 @@ object Day19 {
                 )
             }
 
-        val maxGeodes = blueprints.map { getMaxGeodesForBluePrint(it) }
-        return maxGeodes.max()
+        // 31, 8
+        val maxGeodes = blueprints.associate { it.id to getMaxGeodesForBluePrint(it) }
+        return maxGeodes.map { it.key * it.value }.sum()
     }
 
-    private fun getMaxGeodesForBluePrint(bluePrint: BluePrint) : Int {
+    private fun getMaxGeodesForBluePrint(bluePrint: BluePrint, time: Int = 24): Int {
+        val maxOreCost = listOf(bluePrint.oreRobotCosts.ore, bluePrint.clayRobotCosts.ore, bluePrint.obsidianRobotCosts.ore, bluePrint.geodeRobotCosts.ore).max()
+        val maxClayCost = bluePrint.obsidianRobotCosts.clay
+        val maxObsidianCost = bluePrint.geodeRobotCosts.obsidian
         var minutesPassed = 0
-        var credits = setOf(Credit(1, 0, 0, 0,0, 0, 0, 0))
-        while (minutesPassed < 24) {
+        var credits = setOf(Credit(1, 0, 0, 0, 0, 0, 0, 0))
+        while (minutesPassed < time) {
             val newCredits = credits.map {
                 val possibilities = mutableSetOf<Credit>()
                 var newOreRobots = 0
                 var newClayRobots = 0
                 var newObsidianRobots = 0
                 var newGeodeRobots = 0
-                if (it.canAfford(bluePrint.obsidianRobotCosts)) {
-                    newObsidianRobots++
-                }
+
                 if (it.canAfford(bluePrint.geodeRobotCosts)) {
                     newGeodeRobots++
-                }
-                if (it.canAfford(bluePrint.clayRobotCosts)) {
-                    newClayRobots++
-                }
-                if (it.canAfford(bluePrint.oreRobotCosts)) {
-                    newOreRobots++
+                } else if (it.canAfford(bluePrint.obsidianRobotCosts) && it.obsidianRobots < maxObsidianCost) {
+                    newObsidianRobots++
+                } else {
+                    if (it.canAfford(bluePrint.clayRobotCosts) && it.clayRobots < maxClayCost) {
+                        newClayRobots++
+                    }
+                    if (it.canAfford(bluePrint.oreRobotCosts) && it.oreRobots < maxOreCost) {
+                        newOreRobots++
+                    }
                 }
                 it.farm()
-                possibilities.add(it)
+                if (newGeodeRobots <= 0) {
+                    possibilities.add(it)
+                }
                 if (newObsidianRobots > 0) {
                     val obsidianCreation = it.copy(obsidianRobots = it.obsidianRobots + 1)
                     obsidianCreation.deduct(bluePrint.obsidianRobotCosts)
@@ -86,6 +95,7 @@ object Day19 {
             minutesPassed++
         }
 
+        println(credits.maxOf { it.geodes })
         return credits.maxOf { it.geodes }
     }
 
@@ -114,7 +124,7 @@ object Day19 {
             this.geodes += geodeRobots
         }
 
-        fun canAfford(cost: Cost) : Boolean {
+        fun canAfford(cost: Cost): Boolean {
             return this.ore >= cost.ore && this.clay >= cost.clay && this.obsidian >= cost.obsidian
         }
 
@@ -132,9 +142,31 @@ object Day19 {
         val obsidian: Int
     )
 
-    fun solvePart2(): Int {
+    fun solvePart2(): Long {
         val input = Day19::class.java.getResource("day19.txt")?.readText() ?: error("Can't read input")
+        val blueprints = input.split("\r\n")
+            .map {
+                val (id,
+                    oreRobotCostsInOre,
+                    clayRobotCostsInOre,
+                    obsidianRobotCostsInOre,
+                    obsidianRobotCostsInClas,
+                    geodeRobotCostsInOre,
+                    geodeRobotCostsInObsidian) = bluePrintRegex.matchEntire(it)?.destructured
+                    ?: error("Does not match input")
+                BluePrint(
+                    id.toInt(),
+                    Cost(oreRobotCostsInOre.toInt(), 0, 0),
+                    Cost(clayRobotCostsInOre.toInt(), 0, 0),
+                    Cost(obsidianRobotCostsInOre.toInt(), obsidianRobotCostsInClas.toInt(), 0),
+                    Cost(geodeRobotCostsInOre.toInt(), 0, geodeRobotCostsInObsidian.toInt())
+                )
+            }
 
-        return -1
+        val maxGeodes = blueprints
+            .take(3)
+            .map { getMaxGeodesForBluePrint(it, 32).toLong() }
+        println(maxGeodes)
+        return maxGeodes.reduce { acc, i -> acc * i }
     }
 }
