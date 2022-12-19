@@ -55,9 +55,10 @@ object Day19 {
 
                 if (it.canAfford(bluePrint.geodeRobotCosts)) {
                     newGeodeRobots++
-                } else if (it.canAfford(bluePrint.obsidianRobotCosts) && it.obsidianRobots < maxObsidianCost) {
-                    newObsidianRobots++
                 } else {
+                    if (it.canAfford(bluePrint.obsidianRobotCosts) && it.obsidianRobots < maxObsidianCost) {
+                        newObsidianRobots++
+                    }
                     if (it.canAfford(bluePrint.clayRobotCosts) && it.clayRobots < maxClayCost) {
                         newClayRobots++
                     }
@@ -164,7 +165,7 @@ object Day19 {
             }
 
         val maxGeodes = blueprints
-            .take(3)
+            .take(1)
             .map { getMaxGeodesForBluePrint(it, 32).toLong() }
         println(maxGeodes)
         return maxGeodes.reduce { acc, i -> acc * i }
