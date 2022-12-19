@@ -1,7 +1,7 @@
 import kotlin.math.max
 
 fun main(args: Array<String>) {
-   // println("Part 1: ${Day19.solvePart1()}")
+    // println("Part 1: ${Day19.solvePart1()}")
     println("Part 2: ${Day19.solvePart2()}")
 }
 
@@ -40,7 +40,12 @@ object Day19 {
     }
 
     private fun getMaxGeodesForBluePrint(bluePrint: BluePrint, time: Int = 24): Int {
-        val maxOreCost = listOf(bluePrint.oreRobotCosts.ore, bluePrint.clayRobotCosts.ore, bluePrint.obsidianRobotCosts.ore, bluePrint.geodeRobotCosts.ore).max()
+        val maxOreCost = listOf(
+            bluePrint.oreRobotCosts.ore,
+            bluePrint.clayRobotCosts.ore,
+            bluePrint.obsidianRobotCosts.ore,
+            bluePrint.geodeRobotCosts.ore
+        ).max()
         val maxClayCost = bluePrint.obsidianRobotCosts.clay
         val maxObsidianCost = bluePrint.geodeRobotCosts.obsidian
         var minutesPassed = 0
@@ -92,13 +97,29 @@ object Day19 {
                 }
                 possibilities
             }
-            credits = newCredits.flatten().toSet()
+            credits = keepBestOnly(newCredits.flatten().toSet())
             minutesPassed++
         }
 
+        // 30, 8, 17
         println(credits.maxOf { it.geodes })
         return credits.maxOf { it.geodes }
     }
+
+    private fun keepBestOnly(creditOptions: Set<Credit>): Set<Credit> {
+        val grouped = creditOptions.groupBy { Important(it.oreRobots, it.clayRobots, it.obsidianRobots, it.geodeRobots, it.obsidian, it.geodes, it.clay) }
+        return grouped.map { it.value.maxBy { it.ore } }.toSet()
+    }
+
+    data class Important(
+        var oreRobots: Int,
+        var clayRobots: Int,
+        var obsidianRobots: Int,
+        var geodeRobots: Int,
+        var obsidian: Int,
+        var geodes: Int,
+        var clay: Int,
+    )
 
     data class BluePrint(
         val id: Int,
@@ -135,6 +156,37 @@ object Day19 {
             this.obsidian -= cost.obsidian
         }
 
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Credit
+
+            if (oreRobots != other.oreRobots) return false
+            if (clayRobots != other.clayRobots) return false
+            if (obsidianRobots != other.obsidianRobots) return false
+            if (geodeRobots != other.geodeRobots) return false
+            if (ore != other.ore) return false
+            if (clay != other.clay) return false
+            if (obsidian != other.obsidian) return false
+            if (geodes != other.geodes) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = oreRobots
+            result = 31 * result + clayRobots
+            result = 31 * result + obsidianRobots
+            result = 31 * result + geodeRobots
+            result = 31 * result + ore
+            result = 31 * result + clay
+            result = 31 * result + obsidian
+            result = 31 * result + geodes
+            return result
+        }
+
+
     }
 
     data class Cost(
@@ -165,7 +217,7 @@ object Day19 {
             }
 
         val maxGeodes = blueprints
-            .take(1)
+            .take(3)
             .map { getMaxGeodesForBluePrint(it, 32).toLong() }
         println(maxGeodes)
         return maxGeodes.reduce { acc, i -> acc * i }
