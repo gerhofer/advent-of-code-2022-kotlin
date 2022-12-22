@@ -10,7 +10,7 @@ object Day22 {
     const val OPEN = "."
 
     fun solvePart1(): Long {
-        val input = Day22::class.java.getResource("day22.txt")?.readText() ?: error("Can't read input")
+        val input = Day22Example::class.java.getResource("day22.txt")?.readText() ?: error("Can't read input")
         val areas = input.split("\r\n\r\n")
         val field = areas[0].split("\r\n")
             .map { it.split("").filter { c -> c.isNotEmpty() } }
@@ -68,19 +68,18 @@ object Day22 {
     }
 
     fun solvePart2(): Long {
-        val input = Day22::class.java.getResource("day22.txt")?.readText() ?: error("Can't read input")
+        val input = Day22Example::class.java.getResource("day22.txt")?.readText() ?: error("Can't read input")
         val areas = input.split("\r\n\r\n")
         val field = areas[0].split("\r\n")
             .map { it.split("").filter { c -> c.isNotBlank() } }
-        val height = field.size / 3
-        val width = field[0].size
+        val size = field.size / 4
         val cube = Cube(
-            field.subList(0, height),
-            field.subList(height, height * 2).map { it.subList(0, width) },
-            field.subList(height, height * 2).map { it.subList(width, width * 2) },
-            field.subList(height, height * 2).map { it.subList(width * 2, width * 3) },
-            field.subList(height * 2, height * 3).map { it.subList(0, width) },
-            field.subList(height * 2, height * 3).map { it.subList(width, width * 2) },
+            field.subList(0, size).map { it.subList(0, size) },
+            field.subList(0, size).map { it.subList(size, size*2) },
+            field.subList(size, size * 2),
+            field.subList(size* 2, size * 3).map { it.subList(size, size * 2) },
+            field.subList(size * 2, size * 3).map { it.subList(0, size) },
+            field.subList(size * 3, size * 4),
         )
         var position = CubePosition(CubeFace.FIRST, 0, 0, Direction.RIGHT)
         var path = areas[1]
@@ -105,16 +104,16 @@ object Day22 {
                 move(position, cube, amount)
                 path = ""
             }
-            println("Path is $path, position is $position, direction is ${position.direction}")
+            //println("Path is $path, position is $position, direction is ${position.direction}")
         }
 
         return when (position.face) {
-            CubeFace.FIRST -> 1000L * (position.row + 1) + 4 * (position.column + 2 * width + 1) + position.direction.value
-            CubeFace.SECOND -> 1000L * (position.row + width + 1) + 4 * (position.column + 1) + position.direction.value
-            CubeFace.THIRD -> 1000L * (position.row + width + 1) + 4 * (position.column + width + 1) + position.direction.value
-            CubeFace.FOURTH -> 1000L * (position.row + width + 1) + 4 * (position.column + 2 * width + 1) + position.direction.value
-            CubeFace.FIFTH -> 1000L * (position.row + 2 * width + 1) + 4 * (position.column + 2 * width + 1) + position.direction.value
-            CubeFace.SIXTH -> 1000L * (position.row + 2 * width + 1) + 4 * (position.column + 3 * width + 1) + position.direction.value
+            CubeFace.FIRST -> 1000L * (position.row + 1) + 4 * (position.column + size + 1) + position.direction.value
+            CubeFace.SECOND -> 1000L * (position.row + 1) + 4 * (position.column + 2 * size + 1) + position.direction.value
+            CubeFace.THIRD -> 1000L * (position.row + size + 1) + 4 * (position.column + size + 1) + position.direction.value
+            CubeFace.FOURTH -> 1000L * (position.row + size * 2 + 1) + 4 * (position.column + size + 1) + position.direction.value
+            CubeFace.FIFTH -> 1000L * (position.row + 2 * size + 1) + 4 * (position.column + 1) + position.direction.value
+            CubeFace.SIXTH -> 1000L * (position.row + 3 * size + 1) + 4 * (position.column + 1) + position.direction.value
         }
     }
 
@@ -153,12 +152,12 @@ object Day22 {
             } else {
                 when (face) {
                     CubeFace.FIRST -> {
-                        val newFace = cube.getFace(CubeFace.SECOND)
-                        val newRow = 0
-                        val newColumn = (newFace.size - 1) - column
-                        val newDirection = Direction.DOWN
+                        val newFace = cube.getFace(CubeFace.SIXTH)
+                        val newRow = column
+                        val newColumn = 0
+                        val newDirection = Direction.RIGHT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SECOND
+                            face = CubeFace.SIXTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -166,12 +165,12 @@ object Day22 {
                     }
 
                     CubeFace.SECOND -> {
-                        val newFace = cube.getFace(CubeFace.FIRST)
-                        val newRow = 0
-                        val newColumn = (newFace.size - 1) - column
-                        val newDirection = Direction.DOWN
+                        val newFace = cube.getFace(CubeFace.SIXTH)
+                        val newRow = newFace.size - 1
+                        val newColumn = column
+                        val newDirection = Direction.UP
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIRST
+                            face = CubeFace.SIXTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -180,9 +179,9 @@ object Day22 {
 
                     CubeFace.THIRD -> {
                         val newFace = cube.getFace(CubeFace.FIRST)
-                        val newRow = column
-                        val newColumn = 0
-                        val newDirection = Direction.RIGHT
+                        val newRow = newFace.size - 1
+                        val newColumn = column
+                        val newDirection = Direction.UP
                         if (newFace[newRow][newColumn] == OPEN) {
                             face = CubeFace.FIRST
                             row = newRow
@@ -192,12 +191,12 @@ object Day22 {
                     }
 
                     CubeFace.FOURTH -> {
-                        val newFace = cube.getFace(CubeFace.FIRST)
+                        val newFace = cube.getFace(CubeFace.THIRD)
                         val newRow = newFace.size - 1
                         val newColumn = column
                         val newDirection = Direction.UP
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIRST
+                            face = CubeFace.THIRD
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -205,12 +204,12 @@ object Day22 {
                     }
 
                     CubeFace.FIFTH -> {
-                        val newFace = cube.getFace(CubeFace.FOURTH)
-                        val newRow = newFace.size - 1
-                        val newColumn = column
-                        val newDirection = Direction.UP
+                        val newFace = cube.getFace(CubeFace.THIRD)
+                        val newRow = column
+                        val newColumn = 0
+                        val newDirection = Direction.RIGHT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FOURTH
+                            face = CubeFace.THIRD
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -218,12 +217,12 @@ object Day22 {
                     }
 
                     CubeFace.SIXTH -> {
-                        val newFace = cube.getFace(CubeFace.FOURTH)
-                        val newRow = (newFace.size - 1) - column
-                        val newColumn = newFace.size - 1
-                        val newDirection = Direction.LEFT
+                        val newFace = cube.getFace(CubeFace.FIFTH)
+                        val newRow = newFace.size - 1
+                        val newColumn = column
+                        val newDirection = Direction.UP
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FOURTH
+                            face = CubeFace.FIFTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -247,6 +246,32 @@ object Day22 {
             } else {
                 when (face) {
                     CubeFace.FIRST -> {
+                        val newFace = cube.getFace(CubeFace.THIRD)
+                        val newRow = 0
+                        val newColumn = column
+                        val newDirection = Direction.DOWN
+                        if (newFace[newRow][newColumn] == OPEN) {
+                            face = CubeFace.THIRD
+                            row = newRow
+                            column = newColumn
+                            direction = newDirection
+                        }
+                    }
+
+                    CubeFace.SECOND -> {
+                        val newFace = cube.getFace(CubeFace.THIRD)
+                        val newRow = column
+                        val newColumn = newFace.size - 1
+                        val newDirection = Direction.LEFT
+                        if (newFace[newRow][newColumn] == OPEN) {
+                            face = CubeFace.THIRD
+                            row = newRow
+                            column = newColumn
+                            direction = newDirection
+                        }
+                    }
+
+                    CubeFace.THIRD -> {
                         val newFace = cube.getFace(CubeFace.FOURTH)
                         val newRow = 0
                         val newColumn = column
@@ -259,39 +284,13 @@ object Day22 {
                         }
                     }
 
-                    CubeFace.SECOND -> {
-                        val newFace = cube.getFace(CubeFace.FIFTH)
-                        val newRow = newFace.size - 1
-                        val newColumn = (newFace.size - 1) - column
-                        val newDirection = Direction.UP
-                        if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIFTH
-                            row = newRow
-                            column = newColumn
-                            direction = newDirection
-                        }
-                    }
-
-                    CubeFace.THIRD -> {
-                        val newFace = cube.getFace(CubeFace.FIFTH)
-                        val newRow = (newFace.size - 1) - column
-                        val newColumn = 0
-                        val newDirection = Direction.RIGHT
-                        if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIFTH
-                            row = newRow
-                            column = newColumn
-                            direction = newDirection
-                        }
-                    }
-
                     CubeFace.FOURTH -> {
-                        val newFace = cube.getFace(CubeFace.FIFTH)
-                        val newRow = 0
-                        val newColumn = column
-                        val newDirection = Direction.DOWN
+                        val newFace = cube.getFace(CubeFace.SIXTH)
+                        val newRow = column
+                        val newColumn = newFace.size - 1
+                        val newDirection = Direction.LEFT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIFTH
+                            face = CubeFace.SIXTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -299,12 +298,12 @@ object Day22 {
                     }
 
                     CubeFace.FIFTH -> {
-                        val newFace = cube.getFace(CubeFace.SECOND)
-                        val newRow = newFace.size - 1
-                        val newColumn = (newFace.size - 1) - column
-                        val newDirection = Direction.UP
+                        val newFace = cube.getFace(CubeFace.SIXTH)
+                        val newRow = 0
+                        val newColumn = column
+                        val newDirection = Direction.DOWN
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SECOND
+                            face = CubeFace.SIXTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -313,9 +312,9 @@ object Day22 {
 
                     CubeFace.SIXTH -> {
                         val newFace = cube.getFace(CubeFace.SECOND)
-                        val newRow = (newFace.size - 1) - column
-                        val newColumn = 0
-                        val newDirection = Direction.RIGHT
+                        val newRow = 0
+                        val newColumn = column
+                        val newDirection = Direction.DOWN
                         if (newFace[newRow][newColumn] == OPEN) {
                             face = CubeFace.SECOND
                             row = newRow
@@ -341,12 +340,12 @@ object Day22 {
             } else {
                 when (face) {
                     CubeFace.FIRST -> {
-                        val newFace = cube.getFace(CubeFace.THIRD)
-                        val newRow = 0
-                        val newColumn = row
-                        val newDirection = Direction.DOWN
+                        val newFace = cube.getFace(CubeFace.FIFTH)
+                        val newRow = (newFace.size - 1) - row
+                        val newColumn = 0
+                        val newDirection = Direction.RIGHT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.THIRD
+                            face = CubeFace.FIFTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -354,12 +353,12 @@ object Day22 {
                     }
 
                     CubeFace.SECOND -> {
-                        val newFace = cube.getFace(CubeFace.SIXTH)
-                        val newRow = newFace.size - 1
-                        val newColumn = (newFace.size - 1) - row
-                        val newDirection = Direction.UP
+                        val newFace = cube.getFace(CubeFace.FIRST)
+                        val newRow = row
+                        val newColumn = newFace.size - 1
+                        val newDirection = Direction.LEFT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SIXTH
+                            face = CubeFace.FIRST
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -367,12 +366,12 @@ object Day22 {
                     }
 
                     CubeFace.THIRD -> {
-                        val newFace = cube.getFace(CubeFace.SECOND)
-                        val newRow = row
-                        val newColumn = newFace.size - 1
-                        val newDirection = Direction.LEFT
+                        val newFace = cube.getFace(CubeFace.FIFTH)
+                        val newRow = 0
+                        val newColumn = row
+                        val newDirection = Direction.DOWN
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SECOND
+                            face = CubeFace.FIFTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -380,12 +379,12 @@ object Day22 {
                     }
 
                     CubeFace.FOURTH -> {
-                        val newFace = cube.getFace(CubeFace.THIRD)
+                        val newFace = cube.getFace(CubeFace.FIFTH)
                         val newRow = row
                         val newColumn = newFace.size - 1
                         val newDirection = Direction.LEFT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.THIRD
+                            face = CubeFace.FIFTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -393,12 +392,12 @@ object Day22 {
                     }
 
                     CubeFace.FIFTH -> {
-                        val newFace = cube.getFace(CubeFace.THIRD)
-                        val newRow = newFace.size - 1
-                        val newColumn = (newFace.size - 1) - row
-                        val newDirection = Direction.UP
+                        val newFace = cube.getFace(CubeFace.FIRST)
+                        val newRow = (newFace.size - 1 ) - row
+                        val newColumn = 0
+                        val newDirection = Direction.RIGHT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.THIRD
+                            face = CubeFace.FIRST
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -406,12 +405,12 @@ object Day22 {
                     }
 
                     CubeFace.SIXTH -> {
-                        val newFace = cube.getFace(CubeFace.FIFTH)
-                        val newRow = row
-                        val newColumn = newFace.size - 1
-                        val newDirection = Direction.LEFT
+                        val newFace = cube.getFace(CubeFace.FIRST)
+                        val newRow = 0
+                        val newColumn = row
+                        val newDirection = Direction.DOWN
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIFTH
+                            face = CubeFace.FIRST
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -436,12 +435,12 @@ object Day22 {
             } else {
                 when (face) {
                     CubeFace.FIRST -> {
-                        val newFace = cube.getFace(CubeFace.SIXTH)
-                        val newRow = newFace.size - 1
-                        val newColumn = (newFace.size - 1) - row
-                        val newDirection = Direction.LEFT
+                        val newFace = cube.getFace(CubeFace.SECOND)
+                        val newRow = row
+                        val newColumn = 0
+                        val newDirection = Direction.RIGHT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SIXTH
+                            face = CubeFace.SECOND
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -449,12 +448,12 @@ object Day22 {
                     }
 
                     CubeFace.SECOND -> {
-                        val newFace = cube.getFace(CubeFace.THIRD)
-                        val newRow = row
-                        val newColumn = 0
-                        val newDirection = Direction.RIGHT
+                        val newFace = cube.getFace(CubeFace.FOURTH)
+                        val newRow = (newFace.size - 1) - row
+                        val newColumn = newFace.size - 1
+                        val newDirection = Direction.LEFT
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.THIRD
+                            face = CubeFace.FOURTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -462,6 +461,32 @@ object Day22 {
                     }
 
                     CubeFace.THIRD -> {
+                        val newFace = cube.getFace(CubeFace.SECOND)
+                        val newRow = newFace.size - 1
+                        val newColumn = row
+                        val newDirection = Direction.UP
+                        if (newFace[newRow][newColumn] == OPEN) {
+                            face = CubeFace.SECOND
+                            row = newRow
+                            column = newColumn
+                            direction = newDirection
+                        }
+                    }
+
+                    CubeFace.FOURTH -> {
+                        val newFace = cube.getFace(CubeFace.SECOND)
+                        val newRow = (newFace.size - 1) - row
+                        val newColumn = newFace.size - 1
+                        val newDirection = Direction.LEFT
+                        if (newFace[newRow][newColumn] == OPEN) {
+                            face = CubeFace.SECOND
+                            row = newRow
+                            column = newColumn
+                            direction = newDirection
+                        }
+                    }
+
+                    CubeFace.FIFTH -> {
                         val newFace = cube.getFace(CubeFace.FOURTH)
                         val newRow = row
                         val newColumn = 0
@@ -474,39 +499,13 @@ object Day22 {
                         }
                     }
 
-                    CubeFace.FOURTH -> {
-                        val newFace = cube.getFace(CubeFace.SIXTH)
-                        val newRow = 0
-                        val newColumn = (newFace.size - 1) - row
-                        val newDirection = Direction.DOWN
-                        if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SIXTH
-                            row = newRow
-                            column = newColumn
-                            direction = newDirection
-                        }
-                    }
-
-                    CubeFace.FIFTH -> {
-                        val newFace = cube.getFace(CubeFace.SIXTH)
-                        val newRow = row
-                        val newColumn = 0
-                        val newDirection = Direction.RIGHT
-                        if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.SIXTH
-                            row = newRow
-                            column = newColumn
-                            direction = newDirection
-                        }
-                    }
-
                     CubeFace.SIXTH -> {
-                        val newFace = cube.getFace(CubeFace.FIRST)
-                        val newRow = (newFace.size - 1) - column
-                        val newColumn = newFace.size - 1
-                        val newDirection = Direction.LEFT
+                        val newFace = cube.getFace(CubeFace.FOURTH)
+                        val newRow = newFace.size - 1
+                        val newColumn = row
+                        val newDirection = Direction.UP
                         if (newFace[newRow][newColumn] == OPEN) {
-                            face = CubeFace.FIRST
+                            face = CubeFace.FOURTH
                             row = newRow
                             column = newColumn
                             direction = newDirection
@@ -638,50 +637,6 @@ object Day22 {
 
     enum class CubeFace {
         FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH
-
-        /*fun getUp() {
-            return when (this) {
-                FIRST -> SECOND
-                SECOND -> FIFTH
-                THIRD -> LEFT
-                FOURTH -> UP
-                FIFTH ->
-                    SIXTH ->
-            }
-        }
-
-        fun getDown() {
-            return when (this) {
-                FIRST -> FOURTH
-                SECOND -> FIRST
-                THIRD -> LEFT
-                FOURTH -> UP
-                FIFTH ->
-                    SIXTH ->
-            }
-        }
-
-        fun getLeft() {
-            return when (this) {
-                FIRST -> SIXTH
-                SECOND -> SIXTH
-                THIRD -> LEFT
-                FOURTH -> UP
-                FIFTH ->
-                    SIXTH ->
-            }
-        }
-
-        fun getRight() {
-            return when (this) {
-                FIRST -> THIRD
-                SECOND -> DOWN
-                THIRD -> LEFT
-                FOURTH -> UP
-                FIFTH ->
-                    SIXTH ->
-            }
-        }*/
     }
 
     enum class Direction(val value: Int) {
